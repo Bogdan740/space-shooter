@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS324 Coursework</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <script type="module" src="levelParameters.js"></script>
+    <script type="module" src="particle.js"></script>
+    <script type="module" src="utils.js"></script>
+    <script type="module" src="player.js"></script>
+    <script type="module" src="enemy.js"></script>
+    <script type="module" src="bullet.js"></script>
+    <script type="module" src="box.js"></script>
+    <script type="module" src="main.js"></script>
+
+    <div id="main-menu">
+        <div style="padding-bottom: 100px;">
+            <button id="start-button" class="button">
+                Start
+            </button>
+        </div>
+
+        <div class="instructions" style="display: flex;">
+            <div class="controls">
+                <div style="text-align: center; padding-right: 20px;">
+                    <ul>
+                        <li>
+                            <strong>WASD</strong> - Move
+                        </li>
+                        <li>
+                            <strong>Left Shift</strong> - Toggle Camera Angle
+                        </li>
+                        <li>
+                            <strong>Left Mouse</strong> - Shoot
+                        </li>
+                        <li>
+                            <strong>Right Mouse</strong> - Bomb
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="instructions">
+                <div style="text-align:left; padding-left: 10%;">
+                    <ul>
+                        <li>
+                            <div>
+                                1. Do Not Die
+                            </div>
+                        </li>
+                        <br>
+                        <li>
+                            <div>
+                                2. Go Forward
+                            </div>
+                        </li>
+                        <br>
+                        </li>
+                        <li>
+                            <div>
+                                3. Have Fun
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- <button class="button">
+            <a href="/instructions.html">
+                Instructions
+            </a>
+        </button> -->
+
+
+    </div>
+
+    <div id="win-text" class="win-text">
+        <h1> YOU WON </h1>
+
+    </div>
+
+    <div id="dead-text" class="dead-text">
+        <h1> YOU LOST </h1>
+
+    </div>
+</body>
+
+</html>
