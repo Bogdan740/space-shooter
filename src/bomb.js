@@ -136,15 +136,15 @@ class Bomb {
       }
     });
     // Custom explosion light effect
-    this.explosionLight = new THREE.PointLight(0xffffff, 100);
-    this.explosionLight.position.set(
-      this.mesh.position.x,
-      this.mesh.position.y,
-      this.mesh.position.z
-    );
-    this.explosionLight.decay = 0.1;
+    // this.explosionLight = new THREE.PointLight(0xffffff, 100);
+    // this.explosionLight.position.set(
+    //   this.mesh.position.x,
+    //   this.mesh.position.y,
+    //   this.mesh.position.z
+    // );
+    // this.explosionLight.decay = 0.1;
     this.timeOfExplosion = new Date();
-    scene.add(this.explosionLight);
+    // scene.add(this.explosionLight);
 
     this.exploded = true;
     scene.remove(this);

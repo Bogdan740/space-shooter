@@ -263,14 +263,14 @@ const player = new Player({
 scene.add(player);
 
 const lightDistanceAbovePlayerHead = 10;
-const playerLight = new THREE.SpotLight(0xffffff, 250);
-playerLight.position.set(
-  player.position.x,
-  player.position.y + lightDistanceAbovePlayerHead,
-  player.position.z
-);
-playerLight.castShadow = true;
-scene.add(playerLight);
+// const playerLight = new THREE.SpotLight(0xffffff, 250);
+// playerLight.position.set(
+//   player.position.x,
+//   player.position.y + lightDistanceAbovePlayerHead,
+//   player.position.z
+// );
+// playerLight.castShadow = true;
+// scene.add(playerLight);
 
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
 
@@ -332,10 +332,10 @@ function animate() {
   );
 
   positionAndRotateCamera(camera, player, cameraAngle);
-  playerLight.position.lerp(abovePlayer, 0.4);
-  playerLight.angle = lightAngle * 0.4 + lightAngle * (player.health / player.healthBar) * 0.6;
-  playerLight.target = player;
-  player.update(ground, scene, playerLight, clock.getDelta());
+  // playerLight.position.lerp(abovePlayer, 0.4);
+  // playerLight.angle = lightAngle * 0.4 + lightAngle * (player.health / player.healthBar) * 0.6;
+  // playerLight.target = player;
+  player.update(ground, scene, undefined, clock.getDelta());
 
   if (player.health <= 0) {
     player.health = 0;
@@ -479,7 +479,7 @@ function resetForNextTime(fullReset = false) {
     currentLevel = 1;
     scene.add(player);
     scene.add(soldierMesh);
-    scene.add(playerLight);
+    // scene.add(playerLight);
   }
 
   ({
@@ -514,11 +514,11 @@ function resetForNextTime(fullReset = false) {
     player.position.y,
     player.position.z + cameraDistanceFromPLayer
   );
-  playerLight.position.set(
-    player.position.x,
-    player.position.y + lightDistanceAbovePlayerHead,
-    player.position.z
-  );
+  // playerLight.position.set(
+  //   player.position.x,
+  //   player.position.y + lightDistanceAbovePlayerHead,
+  //   player.position.z
+  // );
 }
 
 const originalCameraPosition = new THREE.Vector3(0, 12, 7);
