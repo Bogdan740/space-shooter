@@ -31,14 +31,14 @@ class Enemy extends Box {
     this.health = this.healthBar;
 
     // Enemy has their own spotlight above head
-    // this.light = new THREE.SpotLight(0xffffff, 250);
-    // this.light.position.set(
-    //   this.position.x,
-    //   this.position.y + lightDistanceAboveHead,
-    //   this.position.z
-    // );
-    // this.light.castShadow = true;
-    // scene.add(this.light);
+    this.light = new THREE.SpotLight(0xffffff, 250);
+    this.light.position.set(
+      this.position.x,
+      this.position.y + lightDistanceAboveHead,
+      this.position.z
+    );
+    this.light.castShadow = true;
+    scene.add(this.light);
   }
 
   update(ground, player, scene) {
@@ -63,11 +63,9 @@ class Enemy extends Box {
       this.position.z
     );
 
-    if (this.light) {
-      this.light.position.lerp(aboveEnemy, 0.4);
-      this.light.angle = lightAngle * (this.health / this.healthBar);
-      this.light.target = this;
-    }
+    this.light.position.lerp(aboveEnemy, 0.4);
+    this.light.angle = lightAngle * (this.health / this.healthBar);
+    this.light.target = this;
     if (this.health <= 0) this.toDelete = true;
 
     if (this.toDelete && !this.exploded) {
@@ -79,10 +77,8 @@ class Enemy extends Box {
       this.geometry.dispose();
       this.material.dispose();
       scene.remove(this);
-      if (this.light) {
-        scene.remove(this.light);
-        this.light.dispose();
-      }
+      scene.remove(this.light);
+      this.light.dispose();
     }
 
     this.updateParticles(ground, scene);

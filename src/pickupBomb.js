@@ -32,17 +32,17 @@ class PickupBomb {
 
     this.toDelete = false;
 
-    // this.light = new THREE.PointLight(0xffffff, 150);
-    // this.light.position.set(
-    //   this.mesh.position.x,
-    //   this.mesh.position.y + lightDistance,
-    //   this.mesh.position.z
-    // );
+    this.light = new THREE.PointLight(0xffffff, 150);
+    this.light.position.set(
+      this.mesh.position.x,
+      this.mesh.position.y + lightDistance,
+      this.mesh.position.z
+    );
 
-    // this.light.castShadow = true;
-    // this.light.target = this.mesh;
-    // this.light.angle = lightAngle;
-    // scene.add(this.light);
+    this.light.castShadow = true;
+    this.light.target = this.mesh;
+    this.light.angle = lightAngle;
+    scene.add(this.light);
   }
 
   calibrate() {
