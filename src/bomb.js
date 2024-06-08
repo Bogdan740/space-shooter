@@ -40,7 +40,7 @@ class Bomb {
     this.timeGrounded = null;
 
     this.triggerExplosion = triggerExplosion;
-    this.alive = true;
+    this.alive = false;
   }
 
   calibrate() {
@@ -52,7 +52,6 @@ class Bomb {
   }
 
   update(ground, enemies, player) {
-    if (!this.alive) return;
     this.mesh.position.x += this.velocity.x;
     this.mesh.position.z += this.velocity.z;
     this.velocity.x *= this.energy_loss;
@@ -64,6 +63,13 @@ class Bomb {
       this.kill(enemies, player);
   }
 
+  initialise(position, velocity) {
+    this.alive = true;
+    this.mesh.position.set(position.x, position.y, position.z);
+    this.velocity.set(velocity.x, velocity.y, velocity.z);
+    this.velocity = new THREE.Vector3(0, 0.4, -3).add(velocity);
+    this.timeGrounded = null;
+  }
   kill(enemies, player) {
     this.alive = false;
     this.explode(enemies, player);

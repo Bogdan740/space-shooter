@@ -6,7 +6,6 @@ import { offScreen } from './utils.js';
 
 // Constants
 const shootCooldownMs = 250;
-const bombCooldownMs = 500;
 const fadeDuration = 0.2;
 // Class repreesnting the player that the user can control
 class Player extends Box {
@@ -132,24 +131,6 @@ class Player extends Box {
         this.position.y - this.height / 1.95,
         this.position.z
       );
-    }
-  }
-
-  bomb(scene, bombMesh) {
-    if (this.numberOfBombs > 0) {
-      const now = new Date();
-      if (!this.timeOfLastBomb || now - this.timeOfLastBomb > bombCooldownMs) {
-        const bomb = new Bomb({
-          position: this.position,
-          velocity: this.velocity,
-          scene,
-          bombMesh,
-          triggerExplosion: this.triggerExplosion,
-        });
-        this.bombs.push(bomb);
-        this.timeOfLastBomb = now;
-        this.numberOfBombs -= 1;
-      }
     }
   }
 

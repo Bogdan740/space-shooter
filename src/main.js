@@ -4,7 +4,6 @@ import { Player } from './player.js';
 import { Enemy } from './enemy.js';
 import {
   randomBetween,
-  pickSpawnPickupPosition,
   handleKeyDown,
   handleKeyUp,
   handleMouseDown,
@@ -12,6 +11,7 @@ import {
   offScreen,
 } from './utils.js';
 import { PickupBomb } from './pickupBomb.js';
+import { Bomb } from './bomb.js';
 import { levelParams } from './levelParameters.js';
 import { GLTFLoader } from '../three/examples/jsm/loaders/GLTFLoader.js';
 import Stats from '../three/examples/jsm/libs/stats.module.js';
@@ -49,7 +49,16 @@ let bombMesh = undefined;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 const pickupBombs = [];
+const playerBombs = [];
 let currentPickupBomb = 0;
+let currentPlayerBomb = 0;
+
+const explosions = [];
+const numExplosions = 4;
+for (let i = 0; i < numExplosions; i++) {
+  explosions.push(new Explosion({ scene }));
+}
+let currentExplosion = 0;
 
 loader.load('./assets/3d/bomb.glb', (gltf) => {
   bombMesh = gltf.scene;
@@ -65,6 +74,18 @@ loader.load('./assets/3d/bomb.glb', (gltf) => {
     });
 
     pickupBombs.push(pickupBomb);
+  }
+
+  for (let i = 0; i < 3; i++) {
+    const playerBomb = new Bomb({
+      position: offScreen.clone(),
+      velocity: new THREE.Vector3(0, 0, 0),
+      scene,
+      bombMesh,
+      triggerExplosion: triggerExplosion,
+    });
+
+    playerBombs.push(playerBomb);
   }
 });
 
@@ -274,15 +295,6 @@ for (let i = 0; i < maxNumberOfEnemies; i++) {
 
 let currentEnemy = 0;
 
-// Initialise Explosions
-
-const explosions = [];
-const numExplosions = 4;
-for (let i = 0; i < numExplosions; i++) {
-  explosions.push(new Explosion({ scene }));
-}
-let currentExplosion = 0;
-
 function triggerExplosion(position, impulse) {
   explosions[currentExplosion++ % explosions.length].explode(position, impulse);
 }
@@ -419,6 +431,13 @@ function animate() {
 
     pickupBomb.update(ground, player);
   }
+
+  for (let i = playerBombs.length - 1; i >= 0; i--) {
+    const playerBomb = playerBombs[i];
+    if (!playerBomb.alive) continue;
+
+    playerBomb.update(ground, enemies, player);
+  }
 }
 
 function handleKeyPresses(player) {
@@ -446,7 +465,7 @@ function handleKeyPresses(player) {
   }
 
   if (keys.mouseRight.isDown) {
-    player.bomb(scene, bombMesh);
+    throwBomb(player);
   }
 
   if (keys.releasedShift.signalSent) {
@@ -500,17 +519,8 @@ function resetForNextTime(fullReset = false) {
   player.reset();
   player.numberOfBombs = 3;
   enemies.forEach((enemy) => {
-    enemy.exploded = true;
-    enemy.toDelete = true;
-    enemy.update(ground, player, scene);
+    enemy.kill();
   });
-  // pickupBombs.forEach((bomb) => {
-  //   scene.remove(bomb.mesh);
-  //   scene.remove(bomb.light);
-  //   bomb.light.dispose();
-  //   bomb.toDelete = true;
-  //   bomb.update(ground, scene, player);
-  // });
   camera.position.set(
     player.position.x,
     player.position.y,
@@ -547,4 +557,19 @@ function positionAndRotateCamera(camera, player, cameraAngle) {
       camera.rotation.x = -Math.PI / 2;
       break;
   }
+}
+
+const bombCooldownMs = 500;
+let timeOfLastBomb;
+function throwBomb(player) {
+  const now = new Date();
+  if (player.numberOfBombs <= 0 || (timeOfLastBomb && now - timeOfLastBomb < bombCooldownMs))
+    return;
+  timeOfLastBomb = now;
+
+  const playerBomb = playerBombs[currentPlayerBomb++ % playerBombs.length];
+  if (playerBomb.alive) return;
+
+  playerBomb.initialise(player.position, player.velocity);
+  player.numberOfBombs = player.numberOfBombs - 1;
 }
