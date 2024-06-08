@@ -1,6 +1,6 @@
 // Useful utility functions
 
-import { Vector3 } from '../three/build/three.module';
+import { Vector3 } from '../three/build/three.module.js';
 
 function randomBetween(min, max) {
   return Math.random() * (max + 1 - min + 1) + min;
