@@ -1,5 +1,7 @@
-import * as THREE from '../External Libraries/build/three.module.js';
+import * as THREE from '../three/build/three.module.js';
 import { Box } from './box.js';
+import { offScreen } from './utils.js';
+import { Explosion } from './explosion.js';
 
 const lightDistanceAboveHead = 15;
 const knockBackMultiplier = 0.2;
@@ -11,6 +13,7 @@ class Enemy extends Box {
     velocity = new THREE.Vector3(0, 0, 0),
     size = 3,
     scene,
+    triggerExplosion,
   }) {
     super({
       height: size,
@@ -39,8 +42,18 @@ class Enemy extends Box {
     );
     this.light.castShadow = true;
     scene.add(this.light);
+
+    this.alive = false;
+
+    this.triggerExplosion = triggerExplosion;
   }
 
+  kill() {
+    this.alive = false;
+    this.triggerExplosion(this.position, this.velocity);
+    this.position.set(offScreen.xs, offScreen.y, offScreen.z);
+    this.light.position.set(offScreen.x, offScreen.y, offScreen.z);
+  }
   update(ground, player, scene) {
     // Calculate vector in direction of player
     const unitVectorInDirectionOfPlayer = player.position
@@ -49,8 +62,8 @@ class Enemy extends Box {
       .normalize();
 
     // Explode and cause damage and knockback to player if enemy touches player. Also kill current enemy.
-    if (this.collidedWith(player) && !this.toDelete && !player.toDelete) {
-      this.toDelete = true;
+    if (this.collidedWith(player) && this.alive && player.alive) {
+      this.kill(scene);
       player.health -= this.size * 5;
       player.degradableVelocity.add(
         unitVectorInDirectionOfPlayer.multiplyScalar(this.size * knockBackMultiplier)
@@ -64,27 +77,10 @@ class Enemy extends Box {
     );
 
     this.light.position.lerp(aboveEnemy, 0.4);
-    this.light.angle = lightAngle * (this.health / this.healthBar);
     this.light.target = this;
-    if (this.health <= 0) this.toDelete = true;
+    if (this.health <= 0) this.kill();
 
-    if (this.toDelete && !this.exploded) {
-      this.explode(scene);
-      this.exploded = true;
-    }
-
-    if (this.exploded) {
-      this.geometry.dispose();
-      this.material.dispose();
-      scene.remove(this);
-      scene.remove(this.light);
-      this.light.dispose();
-    }
-
-    this.updateParticles(ground, scene);
-
-    if (!this.toDelete) {
-      this.material.opacity = 0.4 + this.health / this.healthBar;
+    if (this.alive) {
       this.applyGravity(ground);
       const velocityDueToGravity = this.velocity.y;
       this.degradableVelocity.multiplyScalar(this.velocityDegradationRate);
@@ -96,22 +92,37 @@ class Enemy extends Box {
       this.velocity.y = velocityDueToGravity;
 
       this.calibrate();
-      this.deleteIfOutOfBounds();
+      if (this.isOutOfBounds()) {
+        this.kill();
+      }
     }
   }
 
-  deleteIfOutOfBounds() {
-    if (this.isOutOfBounds()) {
-      this.health = 0;
-    }
+  initialise(position, size) {
+    this.alive = true;
+    this.size = size;
+    this.height = size;
+    this.width = (size * 2) / 3;
+    this.depth = size / 2;
+
+    this.geometry.dispose();
+    this.geometry = new THREE.BoxGeometry(this.width, this.height, this.depth);
+    this.speed = 1 / size;
+
+    this.healthBar = size / 2;
+    this.health = this.healthBar;
+    this.position.set(position.x, position.y, position.z);
+    this.velocity.set(0, 0, 0);
+    this.degradableVelocity.set(0, 0, 0);
+    this.calibrate();
+    this.light.angle = lightAngle * (this.health / this.healthBar);
+    this.material.opacity = 1;
   }
 
-  removeParticlesFromScene(scene) {
-    this.particles.forEach((particle) => {
-      particle.material.dispose();
-      particle.geometry.dispose();
-      scene.remove(particle);
-    });
+  takeDamage(damage) {
+    this.health -= damage;
+    this.light.angle = lightAngle * (this.health / this.healthBar);
+    this.material.opacity = 0.4 + this.health / this.healthBar;
   }
 }
 

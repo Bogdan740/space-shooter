@@ -4,21 +4,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Space Shooter</title>
-    <link rel="icon" type="image/x-icon" href="./Assets/favicon-img.png">
-    <link rel="stylesheet" href="src/style.css">
+    <title>CS324 Coursework</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "../three/build/three.module.js"
+            }
+        }
+    </script>
+
+
 </head>
 
 <body>
 
-    <script type="module" src="src/levelParameters.js"></script>
-    <script type="module" src="src/particle.js"></script>
-    <script type="module" src="src/utils.js"></script>
-    <script type="module" src="src/player.js"></script>
-    <script type="module" src="src/enemy.js"></script>
-    <script type="module" src="src/bullet.js"></script>
+    <script type="module" src="src/bomb.js"></script>
     <script type="module" src="src/box.js"></script>
+    <script type="module" src="src/bullet.js"></script>
+    <script type="module" src="src/enemy.js"></script>
+    <script type="module" src="src/explosion.js"></script>
+    <script type="module" src="src/gameParameters.js"></script>
+    <script type="module" src="src/levelParameters.js"></script>
     <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/particle.js"></script>
+    <script type="module" src="src/pickupBomb.js"></script>
+    <script type="module" src="src/player.js"></script>
+    <script type="module" src="src/utils.js"></script>
+
 
     <div id="main-menu">
         <div style="padding-bottom: 100px;">

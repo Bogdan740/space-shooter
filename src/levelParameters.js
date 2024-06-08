@@ -6,7 +6,7 @@ const level1Parameters = {
   maxNumberOfEnemies: 5,
   maxNumberOfPickupBombs: 1,
   enemyMaxSize: 9,
-  enemySpawnRate: 0.011,
+  enemySpawnRate: 0.02,
   bombSpawnRate: 0.001,
   keyDownVelocityX: 0.25,
   keyDownVelocityZ: 0.25,
@@ -18,7 +18,7 @@ const level2Parameters = {
   maxNumberOfEnemies: 6,
   maxNumberOfPickupBombs: 1,
   enemyMaxSize: 10,
-  enemySpawnRate: 0.013,
+  enemySpawnRate: 0.023,
   bombSpawnRate: 0.0007,
   keyDownVelocityX: 0.25,
   keyDownVelocityZ: 0.25,
@@ -28,5 +28,4 @@ const levelParams = {
   1: level1Parameters,
   2: level2Parameters,
 };
-
 export { levelParams };

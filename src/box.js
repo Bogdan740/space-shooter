@@ -1,8 +1,9 @@
-import * as THREE from '../External Libraries/build/three.module.js';
+import * as THREE from '../three/build/three.module.js';
 import { isWithinBoundsOfXY } from './utils.js';
 import { Particle } from './particle.js';
 
 const minYVal = -40;
+
 class Box extends THREE.Mesh {
   constructor({
     width,
@@ -17,7 +18,7 @@ class Box extends THREE.Mesh {
   }) {
     super(
       new THREE.BoxGeometry(width, height, depth),
-      new THREE.MeshPhongMaterial({ color: color })
+      new THREE.MeshLambertMaterial({ color: color })
     );
 
     this.receiveShadow = true;
@@ -54,68 +55,12 @@ class Box extends THREE.Mesh {
     this.health = this.healthBar;
     this.size = size;
 
-    this.particles = [];
-
     this.toDelete = false;
     this.exploded = false;
   }
 
-  update(ground, scene, playerLight) {
-    if (this.toDelete && !this.exploded) {
-      this.explode(scene);
-      this.exploded = true;
-    }
-    if (this.exploded) {
-      this.geometry.dispose();
-      this.material.dispose();
-      scene.remove(this);
-      if (playerLight) {
-        playerLight.dispose();
-        scene.remove(playerLight);
-      }
-    }
-
-    this.updateParticles(ground, scene);
-    if (this.health <= 0) {
-      this.toDelete = true;
-    }
-    this.material.opacity = 0.1 + this.health / this.healthBar;
-    this.degradableVelocity.multiplyScalar(this.velocityDegradationRate);
-    if (this.degradableVelocity.length() < 0.01)
-      this.degradableVelocity = new THREE.Vector3(0, 0, 0);
-
-    this.position.x += this.velocity.x + this.degradableVelocity.x;
-    this.position.z += this.velocity.z + this.degradableVelocity.z;
-    this.calibrate();
-    this.applyGravity(ground);
-    this.resetIfOutOfBounds();
-  }
-
-  updateParticles(ground, scene) {
-    if (this.particles.length != 0) {
-      for (let i = this.particles.length - 1; i >= 0; i--) {
-        const particle = this.particles[i];
-        if (particle.toDelete) {
-          particle.geometry.dispose();
-          particle.material.dispose();
-          scene.remove(particle);
-          this.particles.splice(i, 1);
-        } else particle.update(ground);
-      }
-    }
-  }
-
   isOutOfBounds() {
     return this.position.y <= minYVal;
-  }
-  resetIfOutOfBounds() {
-    if (this.isOutOfBounds()) {
-      this.position.y = 1;
-      this.position.x = 0;
-      this.position.z = this.position.z > 0 ? 0 : this.position.z;
-      this.velocity = new THREE.Vector3(0, 0, 0);
-      this.calibrate();
-    }
   }
 
   applyGravity(ground) {
@@ -157,7 +102,7 @@ class Box extends THREE.Mesh {
     this.material.opacity = 0;
     const numParticles = this.size * 1;
     for (let i = 0; i < numParticles; i++) {
-      const particle = new Particle({ color: 'red', position: this.position });
+      const particle = new Particle({ color: this.color, position: this.position });
       this.particles.push(particle);
       scene.add(particle);
     }

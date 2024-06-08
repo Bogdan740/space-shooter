@@ -1,4 +1,4 @@
-import * as THREE from '../External Libraries/build/three.module.js';
+import * as THREE from '../three/build/three.module.js';
 import { isWithinBoundsOfXY } from './utils.js';
 import { bombRadius } from './bomb.js';
 

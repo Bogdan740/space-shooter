@@ -1,14 +1,13 @@
-import * as THREE from '../External Libraries/build/three.module.js';
+import * as THREE from '../three/build/three.module.js';
 import { Box } from './box.js';
 import { Bullet } from './bullet.js';
 import { Bomb } from './bomb.js';
-import { isWithinBoundsOfXY } from './utils.js';
-import { Particle } from './particle.js';
+import { offScreen } from './utils.js';
+
 // Constants
 const shootCooldownMs = 250;
 const bombCooldownMs = 500;
 const fadeDuration = 0.2;
-
 // Class repreesnting the player that the user can control
 class Player extends Box {
   constructor({
@@ -18,6 +17,8 @@ class Player extends Box {
     color,
     position = new THREE.Vector3(0, 0, 0),
     velocity = new THREE.Vector3(0, 0, 0),
+    scene,
+    triggerExplosion,
   }) {
     super({
       width,
@@ -28,6 +29,7 @@ class Player extends Box {
       velocity,
     });
 
+    this.triggerExplosion = triggerExplosion;
     // Use soldier mesh for nice character and animation
     this.soldierMesh = undefined;
     this.animations = undefined;
@@ -43,6 +45,16 @@ class Player extends Box {
     this.receiveShadow = false;
 
     this.bullets = [];
+    this.numBullets = 5;
+    for (let i = 0; i < this.numBullets; i++) {
+      const bullet = new Bullet({ position: offScreen });
+      bullet.velocity = 0;
+      this.bullets.push(bullet);
+      scene.add(bullet);
+    }
+
+    this.currentBullet = 0;
+
     this.bombs = [];
 
     this.timeOfLastShot = null;
@@ -56,17 +68,16 @@ class Player extends Box {
     this.movingForward = false;
     this.movingBakward = false;
     this.numberOfBombs = 3;
+
+    this.alive = true;
   }
 
-  shoot(scene) {
+  shoot() {
     const now = new Date();
-    // Have a cooldown so the player can't spam the shooting ability
+    // Have a cooldown so the player can't spam the shooting
     if (!this.timeOfLastShot || now - this.timeOfLastShot > shootCooldownMs) {
-      const bullet = new Bullet({
-        position: this.position,
-      });
-      this.bullets.push(bullet);
-      scene.add(bullet);
+      const bullet = this.bullets[this.currentBullet++ % this.numBullets];
+      bullet.instantiateSelf(this.position);
       this.timeOfLastShot = now;
     }
   }
@@ -85,7 +96,7 @@ class Player extends Box {
       this.animationMixer.update(delta);
     }
 
-    if (this.toDelete && !this.exploded) {
+    if (!this.alive && !this.exploded) {
       this.explode(scene);
       this.exploded = true;
     }
@@ -100,7 +111,6 @@ class Player extends Box {
       }
     }
 
-    this.updateParticles(ground, scene);
     if (this.health <= 0) {
       this.toDelete = true;
     }
@@ -125,16 +135,6 @@ class Player extends Box {
     }
   }
 
-  applyGravity(ground) {
-    this.velocity.y += this.gravity + this.degradableVelocity.y * 0.01;
-
-    const distanceToGround = this.bottom + this.velocity.y - ground.top;
-    if (isWithinBoundsOfXY(this, ground) && distanceToGround <= 0 && distanceToGround >= -0.5) {
-      this.position.y = ground.top + this.height / 2;
-      this.velocity.y = 0;
-    } else this.position.y += this.velocity.y;
-  }
-
   bomb(scene, bombMesh) {
     if (this.numberOfBombs > 0) {
       const now = new Date();
@@ -144,6 +144,7 @@ class Player extends Box {
           velocity: this.velocity,
           scene,
           bombMesh,
+          triggerExplosion: this.triggerExplosion,
         });
         this.bombs.push(bomb);
         this.timeOfLastBomb = now;
@@ -165,24 +166,12 @@ class Player extends Box {
 
   reset() {
     this.exploded = false;
-    this.toDelete = false;
     this.position.set(0, 10, 0);
     this.velocity = new THREE.Vector3(0, 0, 0);
     this.degradableVelocity = new THREE.Vector3(0, 0, 0);
-    this.particles = [];
+    // this.particles = [];
     this.health = this.healthBar;
     this.calibrate();
-  }
-
-  explode(scene) {
-    this.exploded = true;
-    this.material.opacity = 0;
-    const numParticles = this.size * 1;
-    for (let i = 0; i < numParticles; i++) {
-      const particle = new Particle({ color: 'green', position: this.position });
-      this.particles.push(particle);
-      scene.add(particle);
-    }
   }
 }
 
