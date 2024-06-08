@@ -8,9 +8,6 @@ const gameParameters = {
 
   minDistAwayFromPlayerEnemySpawn: 100,
   maxDistAwayFromPlayerEnemySpawn: 120,
-
-  minDistAwayFromPlayerBombSpawn: 25,
-  maxDistAwayFromPlayerBombSpawn: 100,
 };
 
 export { gameParameters };

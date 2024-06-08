@@ -19,16 +19,53 @@ import { gameParameters } from './gameParameters.js';
 import { Explosion } from './explosion.js';
 // import { OrbitControls } from './three/examples/jsm/controls/OrbitControls.js';
 
+let currentLevel = 1;
+
+let {
+  maxNumberOfEnemies,
+  maxNumberOfPickupBombs,
+  enemyMaxSize,
+  enemySpawnRate,
+  bombSpawnRate,
+  keyDownVelocityX,
+  keyDownVelocityZ,
+  enemyColor,
+  platformColor,
+} = levelParams[currentLevel];
+
+const {
+  jumpVelocity,
+  cameraDistanceFromPLayer,
+  enemyMinSize,
+  minDistAwayFromPlayerEnemySpawn,
+  maxDistAwayFromPlayerEnemySpawn,
+} = gameParameters;
+
 // Load assets
 const loader = new GLTFLoader();
 
 let bombMesh = undefined;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x000000);
+const pickupBombs = [];
+let currentPickupBomb = 0;
+
 loader.load('./assets/3d/bomb.glb', (gltf) => {
   bombMesh = gltf.scene;
   bombMesh.children.forEach((child) => {
     child.castShadow = true;
     child.receiveShadow = true;
   });
+  for (let i = 0; i < maxNumberOfPickupBombs; i++) {
+    const pickupBomb = new PickupBomb({
+      position: offScreen.clone(),
+      scene: scene,
+      bombMesh,
+    });
+
+    pickupBombs.push(pickupBomb);
+  }
 });
 
 let soldierMesh = undefined;
@@ -61,8 +98,6 @@ button.addEventListener('click', start);
 const mainMenuDiv = document.getElementById('main-menu');
 
 // Set up scene
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
 
 const fov = 100;
 const aspect = window.innerWidth / window.innerHeight;
@@ -74,7 +109,6 @@ camera.position.set(0, 12, 7);
 camera.rotation.x = -0.85;
 
 // Init game parameters
-let currentLevel = 1;
 let gameIsOver = false;
 let gameIsReallyOver = false;
 
@@ -110,28 +144,6 @@ var planeGeometry = new THREE.PlaneGeometry(width, height);
 var plane = new THREE.Mesh(planeGeometry, material);
 plane.material.transparent = true;
 sceneHUD.add(plane);
-
-let {
-  maxNumberOfEnemies,
-  maxNumberOfPickupBombs,
-  enemyMaxSize,
-  enemySpawnRate,
-  bombSpawnRate,
-  keyDownVelocityX,
-  keyDownVelocityZ,
-  enemyColor,
-  platformColor,
-} = levelParams[currentLevel];
-
-const {
-  jumpVelocity,
-  cameraDistanceFromPLayer,
-  enemyMinSize,
-  minDistAwayFromPlayerBombSpawn,
-  maxDistAwayFromPlayerBombSpawn,
-  minDistAwayFromPlayerEnemySpawn,
-  maxDistAwayFromPlayerEnemySpawn,
-} = gameParameters;
 
 const lightAngle = Math.PI / 3.5;
 
@@ -271,8 +283,6 @@ for (let i = 0; i < numExplosions; i++) {
 }
 let currentExplosion = 0;
 
-let pickupBombs = [];
-
 function triggerExplosion(position, impulse) {
   explosions[currentExplosion++ % explosions.length].explode(position, impulse);
 }
@@ -399,25 +409,15 @@ function animate() {
     if (explosion.alive) explosion.update(ground);
   }
 
-  if (pickupBombs.length < maxNumberOfPickupBombs && Math.random() < bombSpawnRate) {
-    const pickupBomb = new PickupBomb({
-      position: new THREE.Vector3(
-        ground.left + pickSpawnPickupPosition(groundWidth),
-        3,
-        player.position.z -
-          randomBetween(minDistAwayFromPlayerBombSpawn, maxDistAwayFromPlayerBombSpawn)
-      ),
-      scene: scene,
-      bombMesh,
-    });
-
-    pickupBombs.push(pickupBomb);
+  if (Math.random() < bombSpawnRate) {
+    const pickupBomb = pickupBombs[currentPickupBomb++ % pickupBombs.length];
+    if (!pickupBomb.alive) pickupBomb.initialise(player, ground);
   }
   for (let i = pickupBombs.length - 1; i >= 0; i--) {
     const pickupBomb = pickupBombs[i];
-    if (pickupBomb.toDelete) {
-      pickupBombs.splice(i, 1);
-    } else pickupBomb.update(ground, scene, player);
+    if (!pickupBomb.alive) continue;
+
+    pickupBomb.update(ground, player);
   }
 }
 
@@ -504,13 +504,13 @@ function resetForNextTime(fullReset = false) {
     enemy.toDelete = true;
     enemy.update(ground, player, scene);
   });
-  pickupBombs.forEach((bomb) => {
-    scene.remove(bomb.mesh);
-    scene.remove(bomb.light);
-    bomb.light.dispose();
-    bomb.toDelete = true;
-    bomb.update(ground, scene, player);
-  });
+  // pickupBombs.forEach((bomb) => {
+  //   scene.remove(bomb.mesh);
+  //   scene.remove(bomb.light);
+  //   bomb.light.dispose();
+  //   bomb.toDelete = true;
+  //   bomb.update(ground, scene, player);
+  // });
   camera.position.set(
     player.position.x,
     player.position.y,

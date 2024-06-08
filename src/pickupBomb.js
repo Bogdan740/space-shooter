@@ -1,6 +1,7 @@
 import * as THREE from '../three/build/three.module.js';
-import { isWithinBoundsOfXY } from './utils.js';
+import { isWithinBoundsOfXY, offScreen } from './utils.js';
 import { bombRadius } from './bomb.js';
+import { pickSpawnPickupPosition, randomBetween } from './utils.js';
 
 // Constants
 const hoverHeight = 2;
@@ -8,6 +9,9 @@ const pickupRange = 3;
 const maxHoverHeight = 2.001;
 const lightDistance = 15;
 const lightAngle = Math.PI / 15;
+
+const minDistAwayFromPlayerBombSpawn = 25;
+const maxDistAwayFromPlayerBombSpawn = 100;
 
 // Class for bombs that be picked up by the player
 class PickupBomb {
@@ -30,7 +34,7 @@ class PickupBomb {
 
     this.calibrate();
 
-    this.toDelete = false;
+    this.alive = false;
 
     this.light = new THREE.PointLight(0xffffff, 150);
     this.light.position.set(
@@ -52,31 +56,36 @@ class PickupBomb {
     this.bottom = this.mesh.position.y - bombRadius;
   }
 
-  update(ground, scene, player) {
+  update(ground, player) {
     this.mesh.position.y += this.velocityY;
     this.calibrate();
     this.applyGravity(ground);
     this.checkWithinPickupRange(player);
-
-    if (this.toDelete) {
-      scene.remove(this.mesh);
-      this.light.dispose();
-      scene.remove(this.light);
-      this.light.dispose();
-    }
   }
 
   checkWithinPickupRange(player) {
     const playerPosXY = new THREE.Vector2(player.position.x, player.position.z);
     const bombPosXY = new THREE.Vector2(this.mesh.position.x, this.mesh.position.z);
-    if (
-      playerPosXY.distanceTo(bombPosXY) < pickupRange &&
-      !this.toDelete &&
-      player.numberOfBombs < 3
-    ) {
+    if (playerPosXY.distanceTo(bombPosXY) < pickupRange && this.alive && player.numberOfBombs < 3) {
       player.numberOfBombs += 1;
-      this.toDelete = true;
+      this.kill();
     }
+  }
+
+  initialise(player, ground) {
+    this.alive = true;
+
+    this.mesh.position.set(
+      ground.left + pickSpawnPickupPosition(ground.width),
+      3,
+      player.position.z -
+        randomBetween(minDistAwayFromPlayerBombSpawn, maxDistAwayFromPlayerBombSpawn)
+    );
+  }
+
+  kill() {
+    this.alive = false;
+    this.mesh.position.set(offScreen.x, offScreen.y, offScreen.z);
   }
 
   applyGravity(ground) {
